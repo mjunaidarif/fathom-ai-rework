@@ -21,7 +21,7 @@ const MODE = process.argv[2]; // "prompt" | "response"
 
 // Author for the frontmatter. Override with AGENT_LOG_AUTHOR if your GitHub
 // handle differs. Change this default once and every session picks it up.
-const AUTHOR = process.env.AGENT_LOG_AUTHOR || "junaid01";
+const AUTHOR = process.env.AGENT_LOG_AUTHOR || "mjunaidarif";
 const TOOL = "claude-code";
 const FALLBACK_MODEL = process.env.AGENT_LOG_MODEL || "claude-opus-4-8";
 

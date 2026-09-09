@@ -39,9 +39,9 @@ YAML frontmatter (`session_id`, `date`, `author`, `model`, `tool`, `project`,
 `[LOG_ENTRY type=PROMPT ...]` / `[LOG_ENTRY type=RESPONSE ...]` blocks. UTC
 timestamps throughout.
 
-> `author` in the frontmatter defaults to `junaid01`. If your GitHub handle
-> differs, change the `AUTHOR` constant at the top of `.claude/hooks/capture.js`
-> (or set the `AGENT_LOG_AUTHOR` env var) before your first real session.
+> `author` in the frontmatter is `mjunaidarif` (set via the `AUTHOR` constant at
+> the top of `.claude/hooks/capture.js`; override per-session with the
+> `AGENT_LOG_AUTHOR` env var if needed).
 
 ## 3. Verification
 
