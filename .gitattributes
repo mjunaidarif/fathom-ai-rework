@@ -1,0 +1,5 @@
+# Keep agent logs and source text LF so committed logs don't churn with CRLF on Windows.
+* text=auto eol=lf
+*.md text eol=lf
+*.js text eol=lf
+*.json text eol=lf
