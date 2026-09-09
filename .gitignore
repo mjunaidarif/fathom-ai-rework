@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+.next/
+out/
+.vercel/
+
+# Env & secrets
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+
+# Claude Code local overrides (personal, not shared)
+.claude/settings.local.json
+
+# NOTE: .agent-logs/ is intentionally NOT ignored.
+# The 8x agent capture logs are committed and ship with the repo.
+# Do not add .agent-logs/ here.
+#
+# The capture script's own error log is noise, though:
+.agent-logs/.capture-errors.log
