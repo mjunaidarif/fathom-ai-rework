@@ -15,7 +15,9 @@ as a static export.
   notetaker joining" strip, and My/Team filters.
 - **Meeting playback synced to the transcript** — a play head that advances a
   clock; the current line highlights and the transcript auto-follows; click any
-  line to seek; search within the call; speed control.
+  line to seek; search within the call; speed control. Since the capture layer
+  is stubbed (no recorded audio), playback **narrates the active line** aloud via
+  the Web Speech API — a distinct voice per speaker, with a mute toggle.
 - **AI summaries with switchable templates** — General, Sales Discovery, Standup,
   1:1, Interview, Customer Success. Authored summaries where seeded; other
   templates are generated on-device from the transcript (labeled as such).

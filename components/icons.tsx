@@ -67,6 +67,12 @@ export const IconSend = (p: P) => (
 export const IconLightning = (p: P) => (
   <svg {...base(p)}><path d="M13 3 5 13h6l-1 8 8-11h-6z" fill="currentColor" stroke="none" /></svg>
 );
+export const IconVolume = (p: P) => (
+  <svg {...base(p)}><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor" stroke="none" /><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" /></svg>
+);
+export const IconMute = (p: P) => (
+  <svg {...base(p)}><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor" stroke="none" /><path d="m16 9 5 6M21 9l-5 6" /></svg>
+);
 export const IconLogo = (p: P) => (
   <svg width={26} height={26} viewBox="0 0 32 32" fill="none" {...p}>
     <rect width="32" height="32" rx="9" fill="var(--accent)" />

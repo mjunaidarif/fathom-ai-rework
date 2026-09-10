@@ -5,7 +5,7 @@ import type { Player } from "@/lib/usePlayer";
 import type { Attendee, Highlight, TranscriptCue } from "@/lib/types";
 import { fmtClock } from "@/lib/format";
 import { Avatar } from "../ui";
-import { IconPlay, IconPause } from "../icons";
+import { IconPlay, IconPause, IconVolume, IconMute } from "../icons";
 
 export function PlayerView({
   player,
@@ -15,6 +15,8 @@ export function PlayerView({
   currentCue,
   highlights,
   onAddHighlight,
+  audioOn,
+  onToggleAudio,
 }: {
   player: Player;
   durationMs: number;
@@ -23,6 +25,8 @@ export function PlayerView({
   currentCue?: TranscriptCue;
   highlights: Highlight[];
   onAddHighlight: () => void;
+  audioOn: boolean;
+  onToggleAudio: () => void;
 }) {
   const barRef = useRef<HTMLDivElement>(null);
   const speaker = attendees.find((a) => a.speakerLabel === currentCue?.speaker);
@@ -106,6 +110,14 @@ export function PlayerView({
           </span>
 
           <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={onToggleAudio}
+              className="btn btn-soft !py-1.5 !px-2"
+              title={audioOn ? "Mute narration" : "Unmute narration"}
+              aria-label={audioOn ? "Mute narration" : "Unmute narration"}
+            >
+              {audioOn ? <IconVolume width={16} height={16} /> : <IconMute width={16} height={16} />}
+            </button>
             <select
               value={player.rate}
               onChange={(e) => player.setRate(Number(e.target.value))}

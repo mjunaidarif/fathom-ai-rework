@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { usePlayer } from "@/lib/usePlayer";
+import { useNarration } from "@/lib/useNarration";
 import { fmtDate, fmtDuration, fmtTime } from "@/lib/format";
 import { PlayerView } from "./meeting/Player";
 import { Transcript } from "./meeting/Transcript";
@@ -18,11 +19,20 @@ export function MeetingDetail({ id }: { id: string }) {
   const durationMs = (meeting?.durationS ?? 0) * 1000;
   const player = usePlayer(durationMs);
   const [shareOpen, setShareOpen] = useState(false);
+  const [audioOn, setAudioOn] = useState(true);
 
   const currentCue = useMemo(
     () => meeting?.transcript.find((c) => player.currentMs >= c.startMs && player.currentMs < c.endMs),
     [meeting, player.currentMs],
   );
+
+  useNarration({
+    enabled: audioOn,
+    playing: player.playing,
+    currentCue,
+    attendees: meeting?.attendees ?? [],
+    rate: player.rate,
+  });
 
   if (!meeting) {
     return (
@@ -85,6 +95,8 @@ export function MeetingDetail({ id }: { id: string }) {
             currentCue={currentCue}
             highlights={meeting.highlights}
             onAddHighlight={addHighlight}
+            audioOn={audioOn}
+            onToggleAudio={() => setAudioOn((v) => !v)}
           />
           <div className="flex-1 min-h-0">
             <Transcript
