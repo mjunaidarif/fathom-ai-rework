@@ -41,8 +41,10 @@ interface StoreValue extends PersistState {
 
 const StoreContext = createContext<StoreValue | null>(null);
 
-function loadInitial(): PersistState {
-  const base: PersistState = {
+// Deterministic seed state — used for SSR and the first client render so
+// hydration always matches. Persisted state is loaded after mount.
+function seedState(): PersistState {
+  return {
     meetings: structuredClone(SEED_MEETINGS),
     playlists: [
       {
@@ -55,6 +57,10 @@ function loadInitial(): PersistState {
       },
     ],
   };
+}
+
+function loadPersisted(): PersistState {
+  const base = seedState();
   if (typeof window === "undefined") return base;
   try {
     const raw = window.localStorage.getItem(LS_KEY);
@@ -69,12 +75,12 @@ let uid = 0;
 const nextId = (p: string) => `${p}_${Date.now().toString(36)}_${uid++}`;
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<PersistState>(() => loadInitial());
+  const [state, setState] = useState<PersistState>(() => seedState());
   const [hydrated, setHydrated] = useState(false);
 
-  // Re-read from localStorage on mount (SSR/export renders with seed).
+  // Re-read from localStorage after mount (SSR/first render use the seed).
   useEffect(() => {
-    setState(loadInitial());
+    setState(loadPersisted());
     setHydrated(true);
   }, []);
 
@@ -188,7 +194,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     } catch {
       /* ignore */
     }
-    setState(loadInitial());
+    setState(seedState());
   }, []);
 
   const value = useMemo<StoreValue>(

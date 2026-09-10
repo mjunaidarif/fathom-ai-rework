@@ -42,9 +42,9 @@ export function PlayerView({
 
   return (
     <div className="card overflow-hidden">
-      {/* "Video" surface */}
+      {/* "Video" surface — height-capped so the transcript below always has room */}
       <div
-        className="relative aspect-video grid place-items-center"
+        className="relative h-[38vh] min-h-[200px] max-h-[440px] grid place-items-center"
         style={{
           background: `radial-gradient(120% 120% at 50% 0%, hsl(${hue} 55% 30%), hsl(${(hue + 30) % 360} 60% 14%))`,
         }}

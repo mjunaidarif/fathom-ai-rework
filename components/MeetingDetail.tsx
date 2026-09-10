@@ -90,6 +90,7 @@ export function MeetingDetail({ id }: { id: string }) {
       {/* Body */}
       <div className="flex-1 min-h-0 grid grid-cols-[1fr_400px] gap-4 p-4">
         <div className="flex flex-col gap-4 min-h-0">
+          <div className="shrink-0">
           <PlayerView
             player={player}
             durationMs={durationMs}
@@ -101,6 +102,7 @@ export function MeetingDetail({ id }: { id: string }) {
             audioOn={audioOn}
             onToggleAudio={() => setAudioOn((v) => !v)}
           />
+          </div>
           <div className="flex-1 min-h-0">
             <Transcript
               cues={meeting.transcript}
