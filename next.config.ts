@@ -7,7 +7,9 @@ const isPages = process.env.DEPLOY_TARGET === "pages";
 const repo = "fathom-ai-rework";
 
 const nextConfig: NextConfig = {
-  output: "export",
+  // Static export only for GitHub Pages. On Vercel (default) run the full Next
+  // runtime so client-created meetings resolve at /meeting/<any-id> on demand.
+  output: isPages ? "export" : undefined,
   images: { unoptimized: true },
   trailingSlash: true,
   basePath: isPages ? `/${repo}` : undefined,

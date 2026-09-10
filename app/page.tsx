@@ -47,18 +47,23 @@ export default function LibraryPage() {
             Everything Fathom captured, summarized and ready to search.
           </p>
         </div>
-        <div className="relative">
-          <IconSearch
-            width={17}
-            height={17}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-3)]"
-          />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Filter meetings…"
-            className="w-[260px] pl-9 pr-3 py-2 rounded-[10px] bg-[var(--surface)] border border-[var(--border)] text-[14px] outline-none focus:border-[var(--accent)] transition-colors"
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <IconSearch
+              width={17}
+              height={17}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-3)]"
+            />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Filter meetings…"
+              className="w-[220px] pl-9 pr-3 py-2 rounded-[10px] bg-[var(--surface)] border border-[var(--border)] text-[14px] outline-none focus:border-[var(--accent)] transition-colors"
+            />
+          </div>
+          <Link href="/record" className="btn btn-primary">
+            <span className="w-2.5 h-2.5 rounded-full bg-white/90" /> Record
+          </Link>
         </div>
       </header>
 

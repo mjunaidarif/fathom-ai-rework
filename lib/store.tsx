@@ -27,7 +27,9 @@ interface PersistState {
 
 interface StoreValue extends PersistState {
   currentUser: (typeof USERS)[number];
+  hydrated: boolean;
   getMeeting: (id: string) => Meeting | undefined;
+  addMeeting: (meeting: Meeting) => void;
   toggleActionItem: (meetingId: string, itemId: string) => void;
   addHighlight: (meetingId: string, h: Omit<Highlight, "id" | "createdAt" | "createdBy">) => void;
   removeHighlight: (meetingId: string, highlightId: string) => void;
@@ -89,6 +91,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     (id: string) => state.meetings.find((m) => m.id === id),
     [state.meetings],
   );
+
+  const addMeeting = useCallback((meeting: Meeting) => {
+    setState((s) => ({ ...s, meetings: [meeting, ...s.meetings] }));
+  }, []);
 
   const mutateMeeting = useCallback(
     (meetingId: string, fn: (m: Meeting) => Meeting) => {
@@ -189,7 +195,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     () => ({
       ...state,
       currentUser: USERS.find((u) => u.id === CURRENT_USER_ID)!,
+      hydrated,
       getMeeting,
+      addMeeting,
       toggleActionItem,
       addHighlight,
       removeHighlight,
@@ -200,7 +208,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }),
     [
       state,
+      hydrated,
       getMeeting,
+      addMeeting,
       toggleActionItem,
       addHighlight,
       removeHighlight,

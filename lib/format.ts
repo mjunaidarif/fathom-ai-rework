@@ -10,6 +10,7 @@ export function fmtClock(ms: number): string {
 }
 
 export function fmtDuration(seconds: number): string {
+  if (seconds < 60) return `${Math.max(1, Math.round(seconds))}s`;
   const m = Math.round(seconds / 60);
   if (m < 60) return `${m} min`;
   const h = Math.floor(m / 60);

@@ -14,7 +14,7 @@ import { AvatarStack, PlatformBadge } from "./ui";
 import { IconChevron, IconShare } from "./icons";
 
 export function MeetingDetail({ id }: { id: string }) {
-  const { getMeeting, addHighlight: addHighlightToStore } = useStore();
+  const { getMeeting, addHighlight: addHighlightToStore, hydrated } = useStore();
   const meeting = getMeeting(id);
   const durationMs = (meeting?.durationS ?? 0) * 1000;
   const player = usePlayer(durationMs);
@@ -35,6 +35,9 @@ export function MeetingDetail({ id }: { id: string }) {
   });
 
   if (!meeting) {
+    if (!hydrated) {
+      return <div className="p-10 text-center text-[var(--text-3)]">Loading meeting…</div>;
+    }
     return (
       <div className="p-10 text-center text-[var(--text-3)]">
         Meeting not found.{" "}

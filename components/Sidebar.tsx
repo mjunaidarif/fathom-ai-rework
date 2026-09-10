@@ -55,6 +55,12 @@ export function Sidebar() {
         })}
       </nav>
 
+      <div className="px-3 mt-3">
+        <Link href="/record" className="btn btn-primary w-full justify-center">
+          <span className="w-2.5 h-2.5 rounded-full bg-white/90" /> New recording
+        </Link>
+      </div>
+
       <div className="px-5 mt-6 mb-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-3)]">
         Library
       </div>
