@@ -2,15 +2,29 @@ import Link from "next/link";
 import type { Meeting } from "@/lib/types";
 import { fmtDuration, fmtRelative, fmtTime } from "@/lib/format";
 import { AvatarStack, PlatformBadge, Tag, Thumbnail } from "./ui";
-import { IconCheck, IconStar } from "./icons";
+import { IconCheck, IconStar, IconTrash } from "./icons";
 
-export function MeetingCard({ m }: { m: Meeting }) {
+export function MeetingCard({ m, onDelete }: { m: Meeting; onDelete?: (id: string) => void }) {
   const openItems = m.actionItems.filter((a) => !a.done).length;
   return (
-    <Link
-      href={`/meeting/${m.id}`}
-      className="card p-3 flex gap-4 hover:shadow-[var(--shadow-md)] transition-shadow group"
-    >
+    <div className="relative group">
+      {onDelete && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onDelete(m.id);
+          }}
+          title="Delete meeting"
+          className="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-lg grid place-items-center bg-[var(--surface-2)] border border-[var(--border)] text-[var(--text-3)] opacity-0 group-hover:opacity-100 hover:text-[var(--red)] hover:border-[var(--red)] transition-all"
+        >
+          <IconTrash width={15} height={15} />
+        </button>
+      )}
+      <Link
+        href={`/meeting/${m.id}`}
+        className="card p-3 flex gap-4 hover:shadow-[var(--shadow-md)] transition-shadow block"
+      >
       <Thumbnail
         hue={m.thumbnailHue}
         duration={fmtDuration(m.durationS)}
@@ -48,6 +62,7 @@ export function MeetingCard({ m }: { m: Meeting }) {
           </div>
         </div>
       </div>
-    </Link>
+      </Link>
+    </div>
   );
 }

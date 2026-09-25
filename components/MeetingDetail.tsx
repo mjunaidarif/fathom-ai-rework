@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { usePlayer } from "@/lib/usePlayer";
 import { useNarration } from "@/lib/useNarration";
@@ -10,15 +11,18 @@ import { PlayerView } from "./meeting/Player";
 import { Transcript } from "./meeting/Transcript";
 import { RightPanel } from "./meeting/RightPanel";
 import { ShareModal } from "./meeting/ShareModal";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { AvatarStack, PlatformBadge } from "./ui";
-import { IconChevron, IconShare } from "./icons";
+import { IconChevron, IconShare, IconTrash } from "./icons";
 
 export function MeetingDetail({ id }: { id: string }) {
-  const { getMeeting, addHighlight: addHighlightToStore, hydrated } = useStore();
+  const { getMeeting, addHighlight: addHighlightToStore, deleteMeeting, hydrated } = useStore();
+  const router = useRouter();
   const meeting = getMeeting(id);
   const durationMs = (meeting?.durationS ?? 0) * 1000;
   const player = usePlayer(durationMs);
   const [shareOpen, setShareOpen] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
   const [audioOn, setAudioOn] = useState(true);
 
   const currentCue = useMemo(
@@ -82,6 +86,13 @@ export function MeetingDetail({ id }: { id: string }) {
           </div>
         </div>
         <AvatarStack attendees={meeting.attendees} max={5} />
+        <button
+          onClick={() => setShowDelete(true)}
+          title="Delete meeting"
+          className="btn btn-soft !px-2.5 hover:!border-[var(--red)] hover:!text-[var(--red)]"
+        >
+          <IconTrash width={16} height={16} />
+        </button>
         <button onClick={() => setShareOpen(true)} className="btn btn-primary">
           <IconShare width={16} height={16} /> Share
         </button>
@@ -118,6 +129,18 @@ export function MeetingDetail({ id }: { id: string }) {
       </div>
 
       {shareOpen && <ShareModal meeting={meeting} onClose={() => setShareOpen(false)} />}
+      {showDelete && (
+        <ConfirmDialog
+          title="Delete this meeting?"
+          body={`“${meeting.title}” and its transcript, summary, action items and highlights will be permanently removed. This can’t be undone.`}
+          confirmLabel="Delete meeting"
+          onCancel={() => setShowDelete(false)}
+          onConfirm={() => {
+            deleteMeeting(meeting.id);
+            router.push("/");
+          }}
+        />
+      )}
     </div>
   );
 }

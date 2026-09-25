@@ -73,6 +73,12 @@ export const IconVolume = (p: P) => (
 export const IconMute = (p: P) => (
   <svg {...base(p)}><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor" stroke="none" /><path d="m16 9 5 6M21 9l-5 6" /></svg>
 );
+export const IconTrash = (p: P) => (
+  <svg {...base(p)}><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13M10 11v6M14 11v6" /></svg>
+);
+export const IconDots = (p: P) => (
+  <svg {...base(p)}><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none" /><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" /><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none" /></svg>
+);
 export const IconLogo = (p: P) => (
   <svg width={26} height={26} viewBox="0 0 32 32" fill="none" {...p}>
     <rect width="32" height="32" rx="9" fill="var(--accent)" />

@@ -6,15 +6,18 @@ import { useStore } from "@/lib/store";
 import { CALENDAR } from "@/lib/seed";
 import { MeetingCard } from "@/components/MeetingCard";
 import { PlatformBadge } from "@/components/ui";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { IconSearch, IconCalendar, IconClock, IconStar } from "@/components/icons";
 import { fmtDuration, fmtTime, fmtRelative } from "@/lib/format";
+import type { Meeting } from "@/lib/types";
 
 type Filter = "all" | "mine" | "team";
 
 export default function LibraryPage() {
-  const { meetings, currentUser, hydrated, error } = useStore();
+  const { meetings, currentUser, hydrated, error, deleteMeeting } = useStore();
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
+  const [pendingDelete, setPendingDelete] = useState<Meeting | null>(null);
 
   const filtered = useMemo(() => {
     let list = [...meetings].sort(
@@ -138,7 +141,10 @@ export default function LibraryPage() {
             Couldn’t load meetings — check the database connection. ({error})
           </div>
         )}
-        {hydrated && !error && filtered.map((m) => <MeetingCard key={m.id} m={m} />)}
+        {hydrated && !error &&
+          filtered.map((m) => (
+            <MeetingCard key={m.id} m={m} onDelete={(id) => setPendingDelete(meetings.find((x) => x.id === id) ?? null)} />
+          ))}
         {hydrated && !error && filtered.length === 0 && (
           <div className="card p-10 text-center text-[var(--text-3)]">No meetings match “{q}”.</div>
         )}
@@ -151,6 +157,19 @@ export default function LibraryPage() {
         </Link>
         .
       </p>
+
+      {pendingDelete && (
+        <ConfirmDialog
+          title="Delete this meeting?"
+          body={`“${pendingDelete.title}” and its transcript, summary, action items and highlights will be permanently removed. This can’t be undone.`}
+          confirmLabel="Delete meeting"
+          onCancel={() => setPendingDelete(null)}
+          onConfirm={() => {
+            deleteMeeting(pendingDelete.id);
+            setPendingDelete(null);
+          }}
+        />
+      )}
     </div>
   );
 }

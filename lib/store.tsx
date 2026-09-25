@@ -31,6 +31,7 @@ interface StoreValue {
   refresh: () => Promise<void>;
   getMeeting: (id: string) => Meeting | undefined;
   addMeeting: (meeting: Meeting) => void;
+  deleteMeeting: (id: string) => void;
   toggleActionItem: (meetingId: string, itemId: string) => void;
   addHighlight: (
     meetingId: string,
@@ -83,6 +84,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const addMeeting = useCallback((meeting: Meeting) => {
     setMeetings((list) => [meeting, ...list.filter((m) => m.id !== meeting.id)]);
+  }, []);
+
+  const deleteMeeting = useCallback((id: string) => {
+    setMeetings((list) => list.filter((m) => m.id !== id));
+    setPlaylists((pls) =>
+      pls.map((p) => ({ ...p, highlightRefs: p.highlightRefs.filter((r) => r.meetingId !== id) })),
+    );
+    fetch(api(`/api/meetings/${id}`), { method: "DELETE" }).catch(() => {});
   }, []);
 
   const toggleActionItem = useCallback(
@@ -194,6 +203,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       refresh,
       getMeeting,
       addMeeting,
+      deleteMeeting,
       toggleActionItem,
       addHighlight,
       removeHighlight,
@@ -211,6 +221,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       refresh,
       getMeeting,
       addMeeting,
+      deleteMeeting,
       toggleActionItem,
       addHighlight,
       removeHighlight,

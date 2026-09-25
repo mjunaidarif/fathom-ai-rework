@@ -151,6 +151,10 @@ export async function persistMeeting(m: Meeting): Promise<Meeting> {
   return mapMeeting(row);
 }
 
+export async function deleteMeeting(id: string): Promise<void> {
+  await prisma.meeting.delete({ where: { id } }).catch(() => {});
+}
+
 export async function toggleActionItem(id: string): Promise<void> {
   const item = await prisma.actionItem.findUnique({ where: { id } });
   if (!item) return;
