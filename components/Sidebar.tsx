@@ -21,7 +21,7 @@ const NAV = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { currentUser, meetings, reset } = useStore();
+  const { currentUser, meetings, refresh } = useStore();
 
   const isActive = (href: string, exact?: boolean) =>
     exact ? pathname === href : pathname === href || pathname.startsWith(href + "/");
@@ -92,11 +92,11 @@ export function Sidebar() {
           <div className="text-[11px] text-[var(--text-3)] truncate">Free plan</div>
         </div>
         <button
-          onClick={reset}
-          title="Reset demo data"
+          onClick={() => void refresh()}
+          title="Reload from the database"
           className="ml-auto text-[11px] text-[var(--text-3)] hover:text-[var(--text)] transition-colors"
         >
-          reset
+          refresh
         </button>
       </div>
     </aside>

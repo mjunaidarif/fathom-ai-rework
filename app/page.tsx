@@ -12,7 +12,7 @@ import { fmtDuration, fmtTime, fmtRelative } from "@/lib/format";
 type Filter = "all" | "mine" | "team";
 
 export default function LibraryPage() {
-  const { meetings, currentUser } = useStore();
+  const { meetings, currentUser, hydrated, error } = useStore();
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
 
@@ -130,13 +130,17 @@ export default function LibraryPage() {
 
       {/* List */}
       <div className="mt-4 flex flex-col gap-3">
-        {filtered.map((m) => (
-          <MeetingCard key={m.id} m={m} />
-        ))}
-        {filtered.length === 0 && (
-          <div className="card p-10 text-center text-[var(--text-3)]">
-            No meetings match “{q}”.
+        {!hydrated && (
+          <div className="card p-10 text-center text-[var(--text-3)]">Loading meetings…</div>
+        )}
+        {hydrated && error && (
+          <div className="card p-10 text-center text-[var(--red)]">
+            Couldn’t load meetings — check the database connection. ({error})
           </div>
+        )}
+        {hydrated && !error && filtered.map((m) => <MeetingCard key={m.id} m={m} />)}
+        {hydrated && !error && filtered.length === 0 && (
+          <div className="card p-10 text-center text-[var(--text-3)]">No meetings match “{q}”.</div>
         )}
       </div>
 

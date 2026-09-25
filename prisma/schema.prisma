@@ -1,0 +1,166 @@
+// Fathom rebuild — real Postgres schema (Supabase) via Prisma.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")   // pooled (pgbouncer) — app runtime
+  directUrl = env("DIRECT_URL")     // direct — migrations
+}
+
+enum Platform {
+  zoom
+  meet
+  teams
+}
+
+enum TemplateId {
+  general
+  sales
+  standup
+  one_on_one
+  interview
+  customer_success
+}
+
+model User {
+  id          String    @id @default(cuid())
+  name        String
+  email       String    @unique
+  avatarColor String
+  initials    String
+  meetings    Meeting[]
+  playlists   Playlist[]
+}
+
+model Meeting {
+  id           String         @id @default(cuid())
+  title        String
+  platform     Platform
+  startedAt    DateTime
+  durationS    Int
+  owner        User           @relation(fields: [ownerId], references: [id])
+  ownerId      String
+  isTeamShared Boolean        @default(false)
+  tags         String[]
+  recap        String
+  recordingUrl String?
+  thumbnailHue Int
+  createdAt    DateTime       @default(now())
+
+  attendees    Attendee[]
+  transcript   TranscriptCue[]
+  summaries    Summary[]
+  actionItems  ActionItem[]
+  highlights   Highlight[]
+  comments     Comment[]
+  playlistItems PlaylistItem[]
+
+  @@index([startedAt])
+  @@index([ownerId])
+}
+
+model Attendee {
+  id           String  @id @default(cuid())
+  meeting      Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  meetingId    String
+  name         String
+  email        String?
+  isHost       Boolean @default(false)
+  speakerLabel String
+  talkTimeS    Int
+  color        String
+
+  @@index([meetingId])
+}
+
+model TranscriptCue {
+  id        String  @id @default(cuid())
+  meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  meetingId String
+  speaker   String
+  startMs   Int
+  endMs     Int
+  text      String
+  order     Int
+
+  @@index([meetingId])
+}
+
+model Summary {
+  id         String     @id @default(cuid())
+  meeting    Meeting    @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  meetingId  String
+  templateId TemplateId
+  sections   Json // SummarySection[]  { heading, bullets[] }
+
+  @@unique([meetingId, templateId])
+  @@index([meetingId])
+}
+
+model ActionItem {
+  id        String  @id @default(cuid())
+  meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  meetingId String
+  text      String
+  assignee  String?
+  done      Boolean @default(false)
+  atMs      Int?
+  order     Int     @default(0)
+
+  @@index([meetingId])
+}
+
+model Highlight {
+  id        String   @id @default(cuid())
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  meetingId String
+  startMs   Int
+  endMs     Int
+  label     String
+  note      String?
+  createdBy String
+  createdAt DateTime @default(now())
+  cueIds    String[]
+
+  playlistItems PlaylistItem[]
+
+  @@index([meetingId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  meeting   Meeting  @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  meetingId String
+  atMs      Int
+  author    String
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([meetingId])
+}
+
+model Playlist {
+  id      String         @id @default(cuid())
+  name    String
+  owner   User?          @relation(fields: [ownerId], references: [id])
+  ownerId String?
+  items   PlaylistItem[]
+  createdAt DateTime     @default(now())
+}
+
+model PlaylistItem {
+  id          String    @id @default(cuid())
+  playlist    Playlist  @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  playlistId  String
+  meeting     Meeting   @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  meetingId   String
+  highlight   Highlight @relation(fields: [highlightId], references: [id], onDelete: Cascade)
+  highlightId String
+  order       Int       @default(0)
+
+  @@unique([playlistId, highlightId])
+  @@index([playlistId])
+}

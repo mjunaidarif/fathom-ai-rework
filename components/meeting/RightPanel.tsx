@@ -215,7 +215,7 @@ function HighlightsTab({ meeting, onSeek }: { meeting: Meeting; onSeek: (ms: num
                 </button>
               ))}
               <button
-                onClick={() => { const id = createPlaylist("New playlist"); addToPlaylist(id, meeting.id, h.id); setOpenFor(null); }}
+                onClick={async () => { const id = await createPlaylist("New playlist"); addToPlaylist(id, meeting.id, h.id); setOpenFor(null); }}
                 className="w-full text-left text-[12.5px] px-2 py-1.5 rounded-md text-[var(--accent)] font-medium hover:bg-[var(--surface)]"
               >
                 ＋ New playlist

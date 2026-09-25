@@ -2,8 +2,10 @@
 
 import { useRef, useState } from "react";
 import Link from "next/link";
-import { useStore } from "@/lib/store";
-import { askFathom, type AskResult } from "@/lib/ask";
+import type { AskResult } from "@/lib/ask";
+
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
+const api = (p: string) => `${BASE}${p}`;
 import { fmtClock } from "@/lib/format";
 import { IconSparkle, IconSend, IconPlay, IconLightning } from "@/components/icons";
 
@@ -21,23 +23,30 @@ const SUGGESTED = [
 ];
 
 export default function AskPage() {
-  const { meetings } = useStore();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
-  const ask = (question: string) => {
+  const ask = async (question: string) => {
     if (!question.trim()) return;
     setMsgs((m) => [...m, { role: "user", text: question }]);
     setInput("");
     setThinking(true);
-    setTimeout(() => {
-      const result = askFathom(question, meetings);
+    try {
+      const res = await fetch(api("/api/ask"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
+      const result = (await res.json()) as AskResult;
       setMsgs((m) => [...m, { role: "assistant", text: result.answer, result }]);
+    } catch {
+      setMsgs((m) => [...m, { role: "assistant", text: "Sorry — I couldn't reach the server." }]);
+    } finally {
       setThinking(false);
       setTimeout(() => endRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
-    }, 500);
+    }
   };
 
   return (

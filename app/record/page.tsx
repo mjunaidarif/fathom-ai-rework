@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { TEMPLATES } from "@/lib/templates";
-import { buildMeetingFromRecording, SAMPLE_1ON1, type RecordedLine } from "@/lib/createMeeting";
+import { SAMPLE_1ON1, type RecordedLine } from "@/lib/createMeeting";
 import { fmtClock } from "@/lib/format";
 import type { Platform, TemplateId } from "@/lib/types";
 import { Avatar } from "@/components/ui";
@@ -21,6 +21,9 @@ interface ParsedLine {
 }
 
 const PALETTE = ["#6366f1", "#10b981", "#f59e0b", "#f43f5e", "#0ea5e9", "#14b8a6", "#d946ef", "#8b5cf6"];
+
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
+const api = (p: string) => `${BASE}${p}`;
 
 function parseScript(script: string): ParsedLine[] {
   const out: ParsedLine[] = [];
@@ -40,7 +43,7 @@ function parseScript(script: string): ParsedLine[] {
 
 export default function RecordPage() {
   const router = useRouter();
-  const { addMeeting, currentUser } = useStore();
+  const { addMeeting } = useStore();
 
   const [phase, setPhase] = useState<Phase>("setup");
   const [title, setTitle] = useState("Weekly 1:1");
@@ -96,19 +99,21 @@ export default function RecordPage() {
         : linesRef.current.map((l) => ({ speaker: l.speaker, text: l.text, startMs: Math.round(l.scheduledMs) }));
     const durationS = Math.max(1, Math.round((elMs ?? elapsedMs) / 1000));
     setPhase("processing");
-    setTimeout(() => {
-      const meeting = buildMeetingFromRecording({
-        title,
-        platform,
-        templateId,
-        participants: [],
-        lines,
-        durationS,
-        ownerId: currentUser.id,
-      });
-      addMeeting(meeting);
-      router.push(`/meeting/${meeting.id}`);
-    }, 1600);
+    (async () => {
+      try {
+        const res = await fetch(api("/api/meetings"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, platform, templateId, lines, durationS }),
+        });
+        if (!res.ok) throw new Error("save failed");
+        const { meeting } = await res.json();
+        addMeeting(meeting);
+        router.push(`/meeting/${meeting.id}`);
+      } catch {
+        router.push("/");
+      }
+    })();
   };
 
   useEffect(() => {

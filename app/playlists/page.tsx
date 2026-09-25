@@ -20,7 +20,7 @@ export default function PlaylistsPage() {
           </p>
         </div>
         <form
-          onSubmit={(e) => { e.preventDefault(); if (name.trim()) { createPlaylist(name.trim()); setName(""); } }}
+          onSubmit={async (e) => { e.preventDefault(); if (name.trim()) { await createPlaylist(name.trim()); setName(""); } }}
           className="flex gap-2"
         >
           <input
