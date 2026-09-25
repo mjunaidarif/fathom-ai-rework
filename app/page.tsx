@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useStore } from "@/lib/store";
-import { CALENDAR } from "@/lib/seed";
 import { MeetingCard } from "@/components/MeetingCard";
 import { PlatformBadge } from "@/components/ui";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -14,7 +13,7 @@ import type { Meeting } from "@/lib/types";
 type Filter = "all" | "mine" | "team";
 
 export default function LibraryPage() {
-  const { meetings, currentUser, hydrated, error, deleteMeeting } = useStore();
+  const { meetings, calendar, currentUser, hydrated, error, deleteMeeting } = useStore();
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
   const [pendingDelete, setPendingDelete] = useState<Meeting | null>(null);
@@ -78,6 +77,7 @@ export default function LibraryPage() {
       </div>
 
       {/* Upcoming */}
+      {calendar.length > 0 && (
       <section className="mt-7">
         <div className="flex items-center gap-2 mb-2.5">
           <h2 className="text-[13px] font-semibold uppercase tracking-wider text-[var(--text-3)]">
@@ -85,7 +85,7 @@ export default function LibraryPage() {
           </h2>
         </div>
         <div className="flex gap-3 overflow-x-auto scroll-thin pb-1">
-          {CALENDAR.map((e) => (
+          {calendar.map((e) => (
             <div key={e.id} className="card px-4 py-3 min-w-[240px]">
               <div className="flex items-center justify-between">
                 <span className="text-[12px] text-[var(--text-3)]">
@@ -106,6 +106,7 @@ export default function LibraryPage() {
           ))}
         </div>
       </section>
+      )}
 
       {/* Filter tabs */}
       <div className="mt-8 flex items-center gap-1 border-b border-[var(--border)]">

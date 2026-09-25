@@ -151,6 +151,18 @@ model Playlist {
   createdAt DateTime     @default(now())
 }
 
+model CalendarEvent {
+  id         String   @id @default(cuid())
+  title      String
+  startAt    DateTime
+  durationS  Int
+  platform   Platform
+  attendees  String[]
+  willRecord Boolean  @default(true)
+
+  @@index([startAt])
+}
+
 model PlaylistItem {
   id          String    @id @default(cuid())
   playlist    Playlist  @relation(fields: [playlistId], references: [id], onDelete: Cascade)

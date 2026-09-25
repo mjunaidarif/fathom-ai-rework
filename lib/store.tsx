@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { USERS, CURRENT_USER_ID } from "./seed";
-import type { Comment, Highlight, Meeting } from "./types";
+import type { CalendarEvent, Comment, Highlight, Meeting } from "./types";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const api = (p: string) => `${BASE}${p}`;
@@ -24,6 +24,7 @@ interface Playlist {
 interface StoreValue {
   meetings: Meeting[];
   playlists: Playlist[];
+  calendar: CalendarEvent[];
   currentUser: (typeof USERS)[number];
   hydrated: boolean;
   loading: boolean;
@@ -48,6 +49,7 @@ const StoreContext = createContext<StoreValue | null>(null);
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [calendar, setCalendar] = useState<CalendarEvent[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -58,12 +60,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const [mRes, pRes] = await Promise.all([fetch(api("/api/meetings")), fetch(api("/api/playlists"))]);
+      const [mRes, pRes, cRes] = await Promise.all([
+        fetch(api("/api/meetings")),
+        fetch(api("/api/playlists")),
+        fetch(api("/api/calendar")),
+      ]);
       if (!mRes.ok || !pRes.ok) throw new Error("Failed to load data");
       const mJson = await mRes.json();
       const pJson = await pRes.json();
+      const cJson = cRes.ok ? await cRes.json() : { events: [] };
       setMeetings(mJson.meetings ?? []);
       setPlaylists(pJson.playlists ?? []);
+      setCalendar(cJson.events ?? []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load data");
     } finally {
@@ -196,6 +204,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     () => ({
       meetings,
       playlists,
+      calendar,
       currentUser,
       hydrated,
       loading,
@@ -214,6 +223,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [
       meetings,
       playlists,
+      calendar,
       currentUser,
       hydrated,
       loading,

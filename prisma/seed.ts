@@ -1,5 +1,5 @@
 import { PrismaClient, type Platform, type TemplateId } from "@prisma/client";
-import { USERS, MEETINGS } from "../lib/seed";
+import { USERS, MEETINGS, CALENDAR } from "../lib/seed";
 
 const prisma = new PrismaClient();
 
@@ -10,6 +10,7 @@ const pid = (meetingId: string, localId: string) => `${meetingId}:${localId}`;
 async function main() {
   console.log("Resetting tables…");
   await prisma.playlist.deleteMany();
+  await prisma.calendarEvent.deleteMany();
   await prisma.meeting.deleteMany();
   await prisma.user.deleteMany();
 
@@ -117,6 +118,21 @@ async function main() {
       },
     },
   });
+
+  console.log(`Seeding ${CALENDAR.length} calendar events…`);
+  for (const e of CALENDAR) {
+    await prisma.calendarEvent.create({
+      data: {
+        id: e.id,
+        title: e.title,
+        startAt: new Date(e.startAt),
+        durationS: e.durationS,
+        platform: e.platform as Platform,
+        attendees: e.attendees,
+        willRecord: e.willRecord,
+      },
+    });
+  }
 
   console.log("Done.");
 }

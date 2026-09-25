@@ -2,6 +2,7 @@ import { prisma } from "./prisma";
 import type { Prisma } from "@prisma/client";
 import type {
   ActionItem,
+  CalendarEvent,
   Comment,
   Highlight,
   Meeting,
@@ -149,6 +150,19 @@ export async function persistMeeting(m: Meeting): Promise<Meeting> {
     include: meetingInclude,
   });
   return mapMeeting(row);
+}
+
+export async function listCalendar(): Promise<CalendarEvent[]> {
+  const rows = await prisma.calendarEvent.findMany({ orderBy: { startAt: "asc" } });
+  return rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    startAt: r.startAt.toISOString(),
+    durationS: r.durationS,
+    platform: r.platform as Platform,
+    attendees: r.attendees,
+    willRecord: r.willRecord,
+  }));
 }
 
 export async function deleteMeeting(id: string): Promise<void> {
