@@ -33,13 +33,25 @@ function firstSentence(text: string): string {
 export function buildMeetingFromRecording(input: RecordInput): Meeting {
   const id = `m_rec_${Date.now().toString(36)}`;
 
-  const cues: TranscriptCue[] = input.lines.map((l, i) => ({
-    id: `c${i + 1}`,
-    speaker: l.speaker,
-    startMs: l.startMs,
-    endMs: input.lines[i + 1]?.startMs ?? input.durationS * 1000,
-    text: l.text,
-  }));
+  // Build a realistic playback timeline from how long each line takes to *speak*,
+  // not from how fast it streamed during capture. This keeps voice narration from
+  // being cut off mid-sentence and makes playback feel naturally paced.
+  const MS_PER_WORD = 400; // ~150 wpm, matches the browser voice at 1x
+  const PAUSE_MS = 500; // gap between speakers
+  const MIN_LINE_MS = 1400;
+
+  let cursor = 0;
+  const cues: TranscriptCue[] = input.lines.map((l, i) => {
+    const words = l.text.trim().split(/\s+/).filter(Boolean).length || 1;
+    const speechMs = Math.max(MIN_LINE_MS, words * MS_PER_WORD);
+    const startMs = cursor;
+    cursor += speechMs + PAUSE_MS;
+    return { id: `c${i + 1}`, speaker: l.speaker, startMs, endMs: 0, text: l.text };
+  });
+  cues.forEach((c, i) => {
+    c.endMs = cues[i + 1]?.startMs ?? cursor;
+  });
+  const durationS = Math.max(1, Math.round(cursor / 1000));
 
   // Speakers from the transcript + any listed participants who didn't speak.
   const speakers = Array.from(new Set(cues.map((c) => c.speaker)));
@@ -75,7 +87,7 @@ export function buildMeetingFromRecording(input: RecordInput): Meeting {
     title: input.title.trim() || "Untitled recording",
     platform: input.platform,
     startedAt: new Date().toISOString(),
-    durationS: input.durationS,
+    durationS,
     ownerId: input.ownerId,
     isTeamShared: false,
     tags: ["Recording"],
