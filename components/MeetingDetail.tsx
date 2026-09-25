@@ -1,15 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
 import { usePlayer } from "@/lib/usePlayer";
 import { useNarration } from "@/lib/useNarration";
+import { deriveChapters } from "@/lib/chapters";
 import { fmtDate, fmtDuration, fmtTime } from "@/lib/format";
-import { PlayerView } from "./meeting/Player";
-import { Transcript } from "./meeting/Transcript";
-import { RightPanel } from "./meeting/RightPanel";
+import { PlayerBar } from "./meeting/PlayerBar";
+import { ChapterOutline } from "./meeting/ChapterOutline";
+import { MeetingDocument } from "./meeting/MeetingDocument";
 import { ShareModal } from "./meeting/ShareModal";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { AvatarStack, PlatformBadge } from "./ui";
@@ -25,6 +26,7 @@ export function MeetingDetail({ id }: { id: string }) {
   const [showDelete, setShowDelete] = useState(false);
   const [audioOn, setAudioOn] = useState(true);
 
+  const chapters = useMemo(() => (meeting ? deriveChapters(meeting) : []), [meeting]);
   const currentCue = useMemo(
     () => meeting?.transcript.find((c) => player.currentMs >= c.startMs && player.currentMs < c.endMs),
     [meeting, player.currentMs],
@@ -38,44 +40,64 @@ export function MeetingDetail({ id }: { id: string }) {
     rate: player.rate,
   });
 
-  if (!meeting) {
-    if (!hydrated) {
-      return <div className="p-10 text-center text-[var(--text-3)]">Loading meeting…</div>;
-    }
-    return (
-      <div className="p-10 text-center text-[var(--text-3)]">
-        Meeting not found.{" "}
-        <Link href="/" className="text-[var(--accent)]">Back to library</Link>
-      </div>
-    );
-  }
-
-  const addHighlight = () => {
-    const cue = currentCue ?? meeting.transcript[0];
+  const addHighlightAt = (ms: number) => {
+    if (!meeting) return;
+    const cue = meeting.transcript.find((c) => ms >= c.startMs && ms < c.endMs) ?? meeting.transcript[0];
     if (!cue) return;
-    const words = cue.text.split(/\s+/).slice(0, 7).join(" ");
     player.pause();
-    // gather cues within the same ~15s window for a tighter clip
-    const windowCues = meeting.transcript.filter(
-      (c) => c.startMs >= cue.startMs && c.startMs < cue.startMs + 15000,
-    );
+    const windowCues = meeting.transcript.filter((c) => c.startMs >= cue.startMs && c.startMs < cue.startMs + 15000);
+    const words = cue.text.replace(/^[^:]+:\s*/, "").split(/\s+/).slice(0, 7).join(" ");
     addHighlightToStore(meeting.id, {
       startMs: cue.startMs,
       endMs: windowCues[windowCues.length - 1]?.endMs ?? cue.endMs,
-      label: `${cue.speaker}: ${words}${cue.text.split(/\s+/).length > 7 ? "…" : ""}`,
+      label: `${cue.speaker}: ${words}…`,
       cueIds: windowCues.map((c) => c.id),
     });
   };
 
+  // Keyboard control (editing-suite feel). Ref keeps the handler reading latest state.
+  const kbd = useRef({ player, cues: meeting?.transcript ?? [], addHighlightAt });
+  kbd.current = { player, cues: meeting?.transcript ?? [], addHighlightAt };
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (el && (/(INPUT|TEXTAREA|SELECT)/.test(el.tagName) || el.isContentEditable)) return;
+      const { player, cues, addHighlightAt } = kbd.current;
+      if (e.code === "Space") {
+        e.preventDefault();
+        player.toggle();
+      } else if (e.code === "ArrowRight") {
+        const next = cues.find((c) => c.startMs > player.currentMs + 250);
+        if (next) player.seek(next.startMs);
+      } else if (e.code === "ArrowLeft") {
+        const prev = [...cues].reverse().find((c) => c.startMs < player.currentMs - 250);
+        if (prev) player.seek(prev.startMs);
+      } else if (e.key.toLowerCase() === "f") {
+        addHighlightAt(player.currentMs);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  if (!meeting) {
+    if (!hydrated) return <div className="p-10 text-center text-[var(--text-3)]">Loading meeting…</div>;
+    return (
+      <div className="p-10 text-center text-[var(--text-3)]">
+        Meeting not found. <Link href="/" className="text-[var(--accent)]">Back to library</Link>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div className="max-w-[1120px] mx-auto px-6 py-4">
       {/* Header */}
-      <header className="px-6 py-3.5 border-b border-[var(--border)] flex items-center gap-4 bg-[var(--surface)]">
+      <header className="flex items-center gap-3 mb-3">
         <Link href="/" className="btn btn-ghost !px-2 -ml-2 rotate-180" title="Back">
           <IconChevron />
         </Link>
         <div className="min-w-0 flex-1">
-          <h1 className="font-bold text-[16px] truncate leading-tight">{meeting.title}</h1>
+          <h1 className="font-bold text-[17px] truncate leading-tight">{meeting.title}</h1>
           <div className="flex items-center gap-2.5 text-[12px] text-[var(--text-3)] mt-0.5">
             <span>{fmtDate(meeting.startedAt)}</span>
             <span>·</span>
@@ -98,34 +120,26 @@ export function MeetingDetail({ id }: { id: string }) {
         </button>
       </header>
 
-      {/* Body */}
-      <div className="flex-1 min-h-0 grid grid-cols-[1fr_400px] gap-4 p-4">
-        <div className="flex flex-col gap-4 min-h-0">
-          <div className="shrink-0">
-          <PlayerView
-            player={player}
-            durationMs={durationMs}
-            hue={meeting.thumbnailHue}
-            attendees={meeting.attendees}
-            currentCue={currentCue}
-            highlights={meeting.highlights}
-            onAddHighlight={addHighlight}
-            audioOn={audioOn}
-            onToggleAudio={() => setAudioOn((v) => !v)}
-          />
-          </div>
-          <div className="flex-1 min-h-0">
-            <Transcript
-              cues={meeting.transcript}
-              attendees={meeting.attendees}
-              currentMs={player.currentMs}
-              onSeek={player.seek}
-              highlights={meeting.highlights}
-            />
-          </div>
-        </div>
+      {/* Sticky player + timeline */}
+      <PlayerBar
+        player={player}
+        durationMs={durationMs}
+        attendees={meeting.attendees}
+        transcript={meeting.transcript}
+        currentCue={currentCue}
+        highlights={meeting.highlights}
+        chapters={chapters}
+        audioOn={audioOn}
+        onToggleAudio={() => setAudioOn((v) => !v)}
+        onAddHighlight={() => addHighlightAt(player.currentMs)}
+      />
 
-        <RightPanel meeting={meeting} currentMs={player.currentMs} onSeek={player.seek} />
+      {/* Outline + document */}
+      <div className="grid grid-cols-[210px_1fr] gap-8 mt-6">
+        <div className="hidden lg:block">
+          <ChapterOutline chapters={chapters} currentMs={player.currentMs} onSeek={player.seek} attendees={meeting.attendees} />
+        </div>
+        <MeetingDocument meeting={meeting} currentMs={player.currentMs} onSeek={player.seek} chapters={chapters} />
       </div>
 
       {shareOpen && <ShareModal meeting={meeting} onClose={() => setShareOpen(false)} />}

@@ -12,6 +12,19 @@ import type { Meeting } from "@/lib/types";
 
 type Filter = "all" | "mine" | "team";
 
+function bucketLabel(iso: string): string {
+  const day = 86_400_000;
+  const now = new Date();
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const t = new Date(iso).getTime();
+  if (t >= startToday) return "Today";
+  if (t >= startToday - day) return "Yesterday";
+  if (t >= startToday - 7 * day) return "Previous 7 days";
+  if (t >= startToday - 30 * day) return "Previous 30 days";
+  return "Older";
+}
+const BUCKET_ORDER = ["Today", "Yesterday", "Previous 7 days", "Previous 30 days", "Older"];
+
 export default function LibraryPage() {
   const { meetings, calendar, currentUser, hydrated, error, deleteMeeting } = useStore();
   const [filter, setFilter] = useState<Filter>("all");
@@ -36,6 +49,16 @@ export default function LibraryPage() {
     }
     return list;
   }, [meetings, filter, q, currentUser.id]);
+
+  const groups = useMemo(() => {
+    const map = new Map<string, typeof filtered>();
+    for (const m of filtered) {
+      const label = bucketLabel(m.startedAt);
+      if (!map.has(label)) map.set(label, []);
+      map.get(label)!.push(m);
+    }
+    return BUCKET_ORDER.filter((l) => map.has(l)).map((l) => [l, map.get(l)!] as const);
+  }, [filtered]);
 
   const totalMin = meetings.reduce((s, m) => s + m.durationS, 0);
   const totalHighlights = meetings.reduce((s, m) => s + m.highlights.length, 0);
@@ -143,8 +166,15 @@ export default function LibraryPage() {
           </div>
         )}
         {hydrated && !error &&
-          filtered.map((m) => (
-            <MeetingCard key={m.id} m={m} onDelete={(id) => setPendingDelete(meetings.find((x) => x.id === id) ?? null)} />
+          groups.map(([label, items]) => (
+            <div key={label}>
+              <h3 className="eyebrow mb-2.5 mt-4 first:mt-0">{label}</h3>
+              <div className="flex flex-col gap-3">
+                {items.map((m) => (
+                  <MeetingCard key={m.id} m={m} onDelete={(id) => setPendingDelete(meetings.find((x) => x.id === id) ?? null)} />
+                ))}
+              </div>
+            </div>
           ))}
         {hydrated && !error && filtered.length === 0 && (
           <div className="card p-10 text-center text-[var(--text-3)]">No meetings match “{q}”.</div>

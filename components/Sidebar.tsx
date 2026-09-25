@@ -34,6 +34,17 @@ export function Sidebar() {
         <span className="chip ml-auto !text-[10px] !py-0.5">rebuild</span>
       </div>
 
+      <div className="px-3 pb-2">
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("open-command-palette"))}
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-[10px] text-[13px] text-[var(--text-3)] bg-[var(--surface-2)] border border-[var(--border)] hover:border-[var(--border-strong)] transition-colors"
+        >
+          <IconSearch width={16} height={16} />
+          <span>Jump to…</span>
+          <kbd className="ml-auto text-[10px] border border-[var(--border-strong)] rounded px-1.5 py-0.5">⌘K</kbd>
+        </button>
+      </div>
+
       <nav className="px-3 flex flex-col gap-0.5">
         {NAV.map(({ href, label, icon: Icon, exact }) => {
           const active = isActive(href, exact);
