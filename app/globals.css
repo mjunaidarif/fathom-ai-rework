@@ -1,31 +1,37 @@
 @import "tailwindcss";
 
-/* ---- Design tokens -------------------------------------------------- */
+/* ============================================================
+   Studio Dark — a dark "editing-suite" design system.
+   Deliberately single-theme; committed dark look.
+   ============================================================ */
 :root {
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --surface-2: #f2f3f6;
-  --border: #e6e8ec;
-  --border-strong: #d6d9df;
-  --text: #14171f;
-  --text-2: #565d6b;
-  --text-3: #8b91a0;
-  --accent: #574bd6;
-  --accent-2: #6d63e6;
-  --accent-ink: #ffffff;
-  --accent-soft: #ecebfb;
-  --green: #12a150;
-  --amber: #d97706;
-  --red: #e5484d;
-  --shadow-sm: 0 1px 2px rgba(20, 23, 31, 0.06), 0 1px 3px rgba(20, 23, 31, 0.04);
-  --shadow-md: 0 4px 12px rgba(20, 23, 31, 0.08), 0 2px 4px rgba(20, 23, 31, 0.04);
-  --shadow-lg: 0 12px 34px rgba(20, 23, 31, 0.12);
+  --bg: #0e0f13;
+  --surface: #16181e;
+  --surface-2: #1e2128;
+  --surface-3: #262a33;
+  --border: #262a33;
+  --border-strong: #363b46;
+  --text: #eef0f4;
+  --text-2: #a7aebc;
+  --text-3: #6e7482;
+  --accent: #ff6b4a; /* coral */
+  --accent-2: #ff8567;
+  --accent-ink: #1a0f09;
+  --accent-soft: rgba(255, 107, 74, 0.14);
+  --green: #34d399;
+  --amber: #fbbf24;
+  --red: #fb6f6f;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.55);
+  --radius: 14px;
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-text: var(--text);
@@ -55,13 +61,32 @@ body {
   color: var(--text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  /* subtle top glow for depth */
+  background-image: radial-gradient(120% 60% at 50% -10%, rgba(255, 107, 74, 0.06), transparent 60%);
+  background-attachment: fixed;
 }
 
 ::selection {
-  background: var(--accent-soft);
+  background: rgba(255, 107, 74, 0.28);
 }
 
-/* Thin, tasteful scrollbars */
+/* Timestamps + numeric readouts read as "studio" in mono */
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Small uppercase section label */
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* Thin scrollbars */
 .scroll-thin {
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
@@ -75,14 +100,15 @@ body {
   border-radius: 999px;
 }
 
-/* Utility component classes */
+/* Cards */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
 }
 
+/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -97,7 +123,8 @@ body {
 }
 .btn-primary {
   background: var(--accent);
-  color: var(--accent-ink);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(255, 107, 74, 0.28);
 }
 .btn-primary:hover {
   background: var(--accent-2);
@@ -117,8 +144,10 @@ body {
 }
 .btn-soft:hover {
   border-color: var(--border-strong);
+  background: var(--surface-3);
 }
 
+/* Chips */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -129,6 +158,18 @@ body {
   border-radius: 999px;
   background: var(--surface-2);
   color: var(--text-2);
+  border: 1px solid var(--border);
+}
+
+/* Inputs inherit the dark surface */
+input,
+textarea,
+select {
+  color: var(--text);
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-3);
 }
 
 @keyframes fadeIn {

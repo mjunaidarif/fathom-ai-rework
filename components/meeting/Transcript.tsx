@@ -100,13 +100,14 @@ export function Transcript({
               key={c.id}
               ref={active ? activeRef : undefined}
               onClick={() => onSeek(c.startMs)}
-              className="group flex gap-3 px-2.5 py-2 rounded-lg cursor-pointer transition-colors"
+              className="group flex gap-3 px-2.5 py-2 rounded-lg cursor-pointer transition-colors border-l-2"
               style={{
                 background: active ? "var(--accent-soft)" : "transparent",
+                borderLeftColor: active ? "var(--accent)" : "transparent",
                 opacity: dim ? 0.4 : 1,
               }}
             >
-              <button className="text-[11px] tabular-nums font-medium mt-0.5 shrink-0 w-10 text-left" style={{ color: active ? "var(--accent)" : "var(--text-3)" }}>
+              <button className="mono text-[11px] font-medium mt-0.5 shrink-0 w-10 text-left" style={{ color: active ? "var(--accent)" : "var(--text-3)" }}>
                 {fmtClock(c.startMs)}
               </button>
               <div className="min-w-0">

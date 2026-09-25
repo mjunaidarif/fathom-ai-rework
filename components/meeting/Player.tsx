@@ -105,7 +105,7 @@ export function PlayerView({
           <button onClick={player.toggle} className="btn btn-primary !px-3">
             {player.playing ? <IconPause width={18} height={18} /> : <IconPlay width={18} height={18} />}
           </button>
-          <span className="text-[13px] tabular-nums text-[var(--text-2)]">
+          <span className="mono text-[13px] text-[var(--text-2)]">
             {fmtClock(player.currentMs)} <span className="text-[var(--text-3)]">/ {fmtClock(durationMs)}</span>
           </span>
 
